@@ -4,18 +4,28 @@ decisions to the dashboard over a WebSocket. Also exposes the scoring API.
     uvicorn kavach.server:app --host 0.0.0.0 --port 8000
 """
 import asyncio
+from contextlib import asynccontextmanager
 import time
 from pathlib import Path
 
 import pandas as pd
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 
 from .engine import ART, Engine
 
 STATIC = Path(__file__).resolve().parent / "static"
-app = FastAPI(title="Kavach - real-time UPI scam & mule shield")
+
+
+@asynccontextmanager
+async def lifespan(_):
+    task = asyncio.create_task(replay())
+    yield
+    task.cancel()
+
+
+app = FastAPI(title="Kavach - real-time UPI scam & mule shield", lifespan=lifespan)
 engine = Engine()
 clients: set[WebSocket] = set()
 
@@ -92,9 +102,6 @@ async def replay():
     await broadcast({"type": "done"})
 
 
-@app.on_event("startup")
-async def start():
-    asyncio.create_task(replay())
 
 
 @app.get("/")
@@ -109,15 +116,21 @@ def health():
 
 
 class CallIn(BaseModel):
-    user: str
-    transcript: str
+    user: str = Field(min_length=1, max_length=32)
+    transcript: str = Field(min_length=1, max_length=5000)
 
 
 class TxnIn(BaseModel):
-    sender: str
-    receiver: str
-    amount: float
-    device: str | None = None
+    sender: str = Field(min_length=1, max_length=32)
+    receiver: str = Field(min_length=1, max_length=32)
+    amount: float = Field(gt=0, le=1e8)
+    device: str | None = Field(default=None, max_length=64)
+
+    @model_validator(mode="after")
+    def distinct(self):
+        if self.sender == self.receiver:
+            raise ValueError("sender and receiver must differ")
+        return self
 
 
 class Control(BaseModel):

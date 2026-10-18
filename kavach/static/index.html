@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kavach · UPI Shield</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Cpath d=%22M16 2l11 4v9c0 7-4.7 12.4-11 15-6.3-2.6-11-8-11-15V6l11-4z%22 fill=%22%234c8dff%22/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
@@ -104,7 +105,7 @@ textarea{min-height:70px;resize:vertical}
 
   <section class="grid">
     <div class="panel">
-      <div class="ph"><h2>Live decisions</h2><span class="hint">click a row for reasons · every flag + 1 in 5 allows shown</span></div>
+      <div class="ph"><h2>Live decisions</h2><span class="hint" id="feedhint">hover to freeze · click a row for reasons</span></div>
       <div id="feed"></div>
     </div>
     <div class="panel">
@@ -147,6 +148,7 @@ textarea{min-height:70px;resize:vertical}
 
 <script>
 const $ = id => document.getElementById(id);
+const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const inr = n => '₹' + Math.round(n).toLocaleString('en-IN');
 const inrShort = n => n >= 1e7 ? '₹' + (n/1e7).toFixed(2) + ' Cr' : n >= 1e5 ? '₹' + (n/1e5).toFixed(1) + ' L' : inr(n);
 const pct = x => (x*100).toFixed(1) + '%';
@@ -186,23 +188,33 @@ function row(t){
   el.className = 'row' + (t.manual ? ' manual' : '');
   el.dataset.id = t.txn_id;
   el.innerHTML = `<span class="dec ${t.decision}">${t.decision.replace('_','-')}</span><span class="hide-s muted">${clock(t.ts).slice(6)}</span>
-    <span>${t.sender} → ${t.receiver}</span><span style="text-align:right">${inr(t.amount)}</span>
+    <span>${esc(t.sender)} → ${esc(t.receiver)}</span><span style="text-align:right">${inr(t.amount)}</span>
     <span class="hide-s"><span class="risk"><i style="width:${t.risk*100}%;background:${riskColor(t.risk)}"></i></span></span><span class="hide-s">${truth}</span>`;
+  if (feedHover) { held.push(el); return; }
   const f = $('feed'); f.prepend(el);
   while (f.children.length > 150) f.lastChild.remove();
 }
+// freeze the feed while the pointer is over it, so rows can be clicked
+let feedHover = false, held = [];
+$('feed').addEventListener('mouseenter', () => { feedHover = true; $('feedhint').textContent = 'paused while hovering'; });
+$('feed').addEventListener('mouseleave', () => {
+  feedHover = false; $('feedhint').textContent = HINT;
+  const f = $('feed'); held.slice(-150).forEach(el => f.prepend(el)); held = [];
+  while (f.children.length > 150) f.lastChild.remove();
+});
+const HINT = 'hover to freeze · click a row for reasons';
 $('feed').addEventListener('click', e => { const r = e.target.closest('.row'); if (r) showDrawer(store.get(r.dataset.id)); });
 
 function reasonsHtml(t){
   if (!t.reasons || !t.reasons.length) return '<div class="muted" style="font-size:12px;margin-top:6px">No risk drivers - normal behaviour for this account.</div>';
-  return t.reasons.map(r => `<div class="reason"><span>${r.label}</span>${r.impact == null ? '<span style="color:var(--violet);font-size:11px">network / policy</span>' : `<span class="bar"><i style="width:${Math.min(100, r.impact*100)}%"></i></span>`}</div>`).join('');
+  return t.reasons.map(r => `<div class="reason"><span>${esc(r.label)}</span>${r.impact == null ? '<span style="color:var(--violet);font-size:11px">network / policy</span>' : `<span class="bar"><i style="width:${Math.min(100, r.impact*100)}%"></i></span>`}</div>`).join('');
 }
 const ACTION = {HOLD:'Payment held · victim alerted · bank notified', STEP_UP:'OTP + 30-min cooling-off with scam warning', ALLOW:'Approved'};
 function showDrawer(t){
   if (!t) return;
   const d = $('drawer');
   d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><span class="dec ${t.decision}">${t.decision}</span><button onclick="this.parentNode.parentNode.classList.remove('show')">✕</button></div>
-    <div style="font:600 15px var(--mono);margin:10px 0 2px">${t.sender} → ${t.receiver} · ${inr(t.amount)}</div>
+    <div style="font:600 15px var(--mono);margin:10px 0 2px">${esc(t.sender)} → ${esc(t.receiver)} · ${inr(t.amount)}</div>
     <div class="muted" style="font-size:12px">${clock(t.ts)} · risk ${(t.risk*100).toFixed(1)}% · scored in ${t.latency_ms} ms</div>
     <div style="margin-top:10px;font-size:12px">${ACTION[t.decision]}</div>
     <div style="margin-top:10px;font-size:11px;color:var(--muted);text-transform:uppercase">Top risk drivers</div>${reasonsHtml(t)}
@@ -244,7 +256,7 @@ function hello(m){
 function call(c){
   const el = document.createElement('div');
   el.className = 'call';
-  el.innerHTML = `<b>${c.user}</b> <span class="muted">${clock(c.ts)} · scam risk ${pct(c.risk)}${c.manual ? ' · live' : ''}</span><div style="margin-top:3px">“${c.transcript.slice(0, 150)}${c.transcript.length > 150 ? '…' : ''}”</div>`;
+  el.innerHTML = `<b>${esc(c.user)}</b> <span class="muted">${clock(c.ts)} · scam risk ${pct(c.risk)}${c.manual ? ' · live' : ''}</span><div style="margin-top:3px">“${esc(c.transcript.slice(0, 150))}${c.transcript.length > 150 ? '…' : ''}”</div>`;
   $('calls').prepend(el);
   while ($('calls').children.length > 40) $('calls').lastChild.remove();
 }
@@ -267,13 +279,18 @@ function connect(){
 }
 connect();
 
-const post = (url, body) => fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)}).then(r => r.json());
+const post = async (url, body) => {
+  const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  const j = await r.json();
+  if (!r.ok) { const res = $('d-res'); res.classList.add('show'); res.innerHTML = `<div style="color:var(--hold)">Invalid input: ${esc((j.detail && j.detail[0] && j.detail[0].msg) || r.status)}</div>`; throw new Error('bad input'); }
+  return j;
+};
 $('pause').onclick = () => post('/api/control', {paused: $('pause').textContent === 'Pause'}).then(stats);
 $('speed').onchange = e => post('/api/control', {speed: +e.target.value});
 $('d-call').onclick = async () => {
   const r = await post('/api/call', {user: $('d-user').value.trim(), transcript: $('d-text').value});
   const res = $('d-res'); res.classList.add('show');
-  res.innerHTML = `<div class="muted" style="font-size:11px">CALL ANALYSIS</div><div class="big" style="color:${r.scam ? 'var(--hold)' : 'var(--allow)'}">${r.scam ? 'Likely scam' : 'Looks normal'} · ${pct(r.risk)}</div><div class="muted" style="font-size:12px;margin-top:4px">${r.scam ? 'Risk attached to ' + r.user + ' for the next 2 hours. Now try the payment.' : 'No scam pattern found.'}</div>`;
+  res.innerHTML = `<div class="muted" style="font-size:11px">CALL ANALYSIS</div><div class="big" style="color:${r.scam ? 'var(--hold)' : 'var(--allow)'}">${r.scam ? 'Likely scam' : 'Looks normal'} · ${pct(r.risk)}</div><div class="muted" style="font-size:12px;margin-top:4px">${r.scam ? 'Risk attached to ' + esc(r.user) + ' for the next 2 hours. Now try the payment.' : 'No scam pattern found.'}</div>`;
 };
 $('d-pay').onclick = async () => {
   const t = await post('/api/txn', {sender: $('d-user').value.trim(), receiver: $('d-recv').value.trim(), amount: +$('d-amt').value});

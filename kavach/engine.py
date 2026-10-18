@@ -24,6 +24,7 @@ LOW_IS_RISKY = np.array([f in ("sender_age", "receiver_age", "recv_hist_in", "re
                                 "sender_mins_since_in") for f in FEATURES])
 IS_AGE = np.array([f in ("sender_age", "receiver_age") for f in FEATURES])
 YOUNG = np.log1p(90)  # "new account" only means < 90 days
+SCAM_CALL = 0.8
 I_CALL, I_NEW = FEATURES.index("scam_call_risk_2h"), FEATURES.index("new_payee")
 
 
@@ -78,9 +79,10 @@ class Engine:
 
     # ---- calls ------------------------------------------------------
     def score_call(self, user, ts, transcript):
-        risk = float(self.call_model.predict_proba([transcript])[0, 1])
+        # too little speech to judge (silence, a hello): don't let the classifier's prior leak into payments
+        risk = float(self.call_model.predict_proba([transcript])[0, 1]) if len(transcript.split()) >= 5 else 0.0
         self.fs.observe_call(user, ts, risk)
-        return {"user": user, "ts": ts, "risk": risk, "scam": risk >= 0.5}
+        return {"user": user, "ts": ts, "risk": risk, "scam": risk >= SCAM_CALL}
 
     # ---- transactions -----------------------------------------------
     def _reasons(self, x, p, k=3):
@@ -106,7 +108,7 @@ class Engine:
         decision = "HOLD" if p >= self.thr_hold else "STEP_UP" if p >= self.thr_step else "ALLOW"
         network = []
         # policy guardrail: a likely scam call + first payment to someone new always gets a cooling-off
-        if decision == "ALLOW" and x[I_CALL] >= 0.8 and x[I_NEW] and t["amount"] >= 1000:
+        if decision == "ALLOW" and x[I_CALL] >= SCAM_CALL and x[I_NEW] and t["amount"] >= 1000:
             decision, p = "STEP_UP", max(p, self.thr_step)
             network.append("Scam call in last 2h + first payment to new payee")
         if r in self.watchlist and decision != "HOLD":

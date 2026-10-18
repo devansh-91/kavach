@@ -82,6 +82,7 @@ Laptop (x86) or LinuxONE:
 python -m venv .venv && .venv/bin/pip install -r requirements.txt
 .venv/bin/python -m kavach.train      # synthetic world + features + Snap ML model (~15 s)
 .venv/bin/python -m kavach.bench      # latency / throughput (CPU vs zDNN on Z)
+.venv/bin/python -m pytest -q tests    # no-leakage, mule, scam-call and API checks (pip install pytest httpx)
 .venv/bin/uvicorn kavach.server:app --host 0.0.0.0 --port 8000
 ```
 
