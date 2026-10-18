@@ -12,6 +12,14 @@ Kavach scores every UPI payment inside the transaction and returns ALLOW, STEP-U
 ## How does your solution leverage IBM Z / LinuxONE technologies?
 Kavach is trained, tested and served on an IBM LinuxONE Community Cloud VM running on an IBM z17 (s390x). Inference uses IBM Snap ML: the model is exported to PMML and re-imported with tree_format="auto"; with IBM's zDNN library installed, Snap ML compiles the trees to zDNN tensors and runs them on the Telum on-chip AI accelerator (NNPA), the same chip as the payment workload, so every payment is scored inside the transaction with no hop to an AI server. We benchmarked both z17 paths: the accelerator gives identical decisions on all 33,538 test payments (49 µs p50); the z17 cores run our compact model in 28 µs (~285k payments/s in batches of 64). Payment and call data never leave the platform: no external AI APIs, model integrity pinned by SHA-256, audit log of every decision. IBM Z already runs most of the world's card and bank transactions, so Kavach fits where UPI switches and bank cores already live.
 
+## What value does your solution deliver, and who will benefit from it?
+Value: Kavach stops scam payments before they settle, while the money can still be saved, instead of chasing it through mule chains after a complaint. In our held-out tests (synthetic UPI data) it catches 97.3% of frauds at a 0.1% false-alarm rate, vs 79.6% for a per-transaction model and 28% for rules. Live replay protected 96.2% of victim money while holding only 0.046% of genuine payments, at ~28 µs per payment, so UPI stays instant. Every decision has plain-language reasons and an audit record.
+Who benefits:
+- Citizens, especially elderly and first-time users hit by digital-arrest and fake-KYC calls: a warning and cooling-off at the moment they pay.
+- Banks and payment apps: lower fraud losses and compensation, fewer false blocks of genuine customers, explainable decisions for audit and RBI.
+- NPCI / UPI switches: run at the switch, it sees mule flows across banks that no single bank can.
+- Police and the 1930 helpline: mule accounts flagged early, with evidence, before cash-out.
+
 ## Github link
 https://github.com/devansh-91/kavach
 
