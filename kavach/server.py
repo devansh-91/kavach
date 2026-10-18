@@ -275,8 +275,9 @@ async def ws(sock: WebSocket):
         if not ok:
             await sock.close(code=1008)
             return
-    clients.add(sock)
     await sock.send_json({"type": "hello", **health()})
+    await sock.send_json(snapshot())  # late joiners see the current totals, even after the replay has ended
+    clients.add(sock)
     try:
         while True:
             await sock.receive_text()

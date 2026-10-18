@@ -92,6 +92,7 @@ def test_websocket_streams_without_key(monkeypatch):
     with _client(monkeypatch) as c:
         with c.websocket_connect("/ws") as ws:
             assert ws.receive_json()["type"] == "hello"
+            assert ws.receive_json()["type"] == "stats"   # current totals right away
 
 
 def test_rejects_malformed_and_hostile_input(monkeypatch):
