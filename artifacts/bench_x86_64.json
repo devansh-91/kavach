@@ -1,0 +1,16 @@
+{
+  "arch": "x86_64",
+  "cpu": "Linux-7.1.5+kali-amd64-x86_64-with-glibc2.43",
+  "n_txns": 20000,
+  "results": [
+    {
+      "tree_format": "compress_trees",
+      "engine": "CPU compressed trees",
+      "e2e_p50_us": 25.8,
+      "e2e_p99_us": 64.1,
+      "batch_1_txn_per_s": 146620,
+      "batch_64_txn_per_s": 338022,
+      "batch_1024_txn_per_s": 344445
+    }
+  ]
+}
