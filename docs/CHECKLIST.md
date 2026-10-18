@@ -16,7 +16,7 @@ payments-grade security review. ✅ verified · ⏳ pending · ⚠️ known limi
 | A7 | Video ≤ 3 min on YouTube/Vimeo | ⏳ | script ready in `docs/submission.md`; recording by team |
 | A8 | Open-source resources ≤ 1024 chars | ✅ | 450 chars |
 | A9 | Event code SSF2026 in project description | ✅ | README, deck, form answers |
-| A10 | Solution actually runs on IBM Z / LinuxONE | ✅ | LinuxONE Community Cloud VM on an **IBM z17** (machine 9175, `nnpa` present): trained, 15/15 tests, full replay and dashboard served from it (`artifacts/linuxone/`) |
+| A10 | Solution actually runs on IBM Z / LinuxONE | ✅ | LinuxONE Community Cloud VM on an **IBM z17** (machine 9175, `nnpa` present): trained, 16/16 tests, full replay and dashboard served from it (`artifacts/linuxone/`) |
 | A11 | Architecture diagram | ✅ | README (Mermaid) + deck slide 5 |
 | A12 | Numbers identical across README, deck, form and `artifacts/linuxone/meta.json` | ✅ | PR-AUC 0.992; 28.2 / 79.6 / 97.3 %; 33,538 txns, 554 frauds |
 
@@ -25,7 +25,7 @@ payments-grade security review. ✅ verified · ⏳ pending · ⚠️ known limi
 | # | Check | Status | Evidence |
 |---|---|---|---|
 | B1 | Every payment scored in-line → ALLOW / STEP-UP / HOLD | ✅ | live replay of 33,538 txns, 0 server errors |
-| B2 | Human-readable reasons, only on the risky side | ✅ | what-if attribution; age reasons only for accounts < 90 days |
+| B2 | Human-readable reasons, only on the risky side, on every flag | ✅ | what-if attribution, with exact Shapley values as the fallback when signals are redundant; age reasons only for accounts < 90 days. Bug found while making the video: 128 of 700 flagged payments had no reason; now 0 (`test_every_flag_explains_itself`) |
 | B3 | Mule-flow features + watchlist | ✅ | `test_mule_pass_through_is_visible` |
 | B4 | Hinglish scam-call detection feeds payment risk | ✅ | `test_scam_call_raises_risk`; short or empty calls ignored |
 | B5 | Held-out accuracy (LinuxONE) | ✅ | 97.3 % recall at 0.1 % FPR vs 79.6 % per-txn ML vs 28.2 % rule (x86 run: 96.2 / 82.1 %) |
@@ -68,4 +68,4 @@ payments-grade security review. ✅ verified · ⏳ pending · ⚠️ known limi
 | C20b | Availability | ✅ | on the VM the server runs as a systemd service (`Restart=always`, enabled at boot); killed with `kill -9` it was back in 8 s; the laptop tunnel reconnects by itself (tested: 7 s) |
 | C21 | Production hardening beyond a hackathon | ⚠️ | still needs TLS/mTLS, a secrets manager/HSM, an analyst review queue, DPDP-compliant retention, and a shared rate limiter for multiple instances |
 
-**Test suite:** `python -m pytest -q tests` → 15 passed on the laptop and on LinuxONE z17 (14/14 in a clean Ubuntu 24.04 container before the WebSocket test was added).
+**Test suite:** `python -m pytest -q tests` → 16 passed on the laptop and on LinuxONE z17 (14/14 in a clean Ubuntu 24.04 container before the WebSocket and explanation tests were added).
