@@ -16,7 +16,7 @@ else
 fi
 python3 -m venv --system-site-packages .venv
 .venv/bin/pip install -q --upgrade pip
-.venv/bin/pip install -q snapml==1.17.2 fastapi==0.143.3 pydantic==2.14.1 uvicorn==0.54.0
+.venv/bin/pip install -q snapml==1.17.2 fastapi==0.143.3 pydantic==2.14.1 uvicorn==0.54.0 websockets==17.2
 echo "== arch: $(uname -m)"; grep -m1 -i "machine" /proc/cpuinfo || true
 grep -qw nnpa /proc/cpuinfo && echo "== NNPA (Telum on-chip AI accelerator) available" || echo "== no NNPA on this machine"
 mkdir -p artifacts && chmod 700 artifacts

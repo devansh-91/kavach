@@ -7,3 +7,4 @@ snapml==1.17.2
 fastapi==0.143.3
 pydantic==2.14.1
 uvicorn==0.54.0
+websockets==17.2

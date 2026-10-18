@@ -87,6 +87,13 @@ def test_api_key_required_when_configured(monkeypatch):
             assert ws.receive_json()["type"] == "hello"
 
 
+def test_websocket_streams_without_key(monkeypatch):
+    import websockets  # noqa: F401  (uvicorn needs it for /ws; must be in requirements)
+    with _client(monkeypatch) as c:
+        with c.websocket_connect("/ws") as ws:
+            assert ws.receive_json()["type"] == "hello"
+
+
 def test_rejects_malformed_and_hostile_input(monkeypatch):
     with _client(monkeypatch) as c:
         bad = [

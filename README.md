@@ -56,7 +56,7 @@ far inside a UPI authorisation budget. Kavach uses the accelerator by default
 
 ## How it uses IBM Z / LinuxONE
 
-- **Runs natively on IBM LinuxONE (s390x)** — trained, tested (14/14) and served on a LinuxONE
+- **Runs natively on IBM LinuxONE (s390x)** — trained, tested (15/15) and served on a LinuxONE
   Community Cloud VM on an IBM z17.
 - **IBM Snap ML** gradient-boosted trees. The trained model is exported to PMML and re-imported with
   `import_model(..., tree_format="auto")`; with IBM's **zDNN** library installed, Snap ML compiles

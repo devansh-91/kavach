@@ -9,16 +9,16 @@ payments-grade security review. ✅ verified · ⏳ pending · ⚠️ known limi
 |---|---|---|---|
 | A1 | Challenge fits a theme | ✅ | Real-Time AI for Critical Decisions ("Detect. Decide. Respond.") |
 | A2 | Problem statement ≤ 1024 chars | ✅ | 780 chars (`docs/submission.md`) |
-| A3 | Solution overview ≤ 1024 chars | ✅ | 890 chars |
-| A4 | IBM Z / LinuxONE answer | ✅ | 962 chars |
-| A5 | Pitch deck PDF ≤ 5 MB, readable | ✅ | 11 pages, 0.58 MB, selectable text, not encrypted |
+| A3 | Solution overview ≤ 1024 chars | ✅ | 996 chars |
+| A4 | IBM Z / LinuxONE answer | ✅ | 918 chars |
+| A5 | Pitch deck PDF ≤ 5 MB, readable | ✅ | 11 pages, 0.53 MB, selectable text, not encrypted |
 | A6 | GitHub link public, https, no login needed | ✅ | repo, raw README and raw PDF all HTTP 200 anonymously |
 | A7 | Video ≤ 3 min on YouTube/Vimeo | ⏳ | script ready in `docs/submission.md`; recording by team |
 | A8 | Open-source resources ≤ 1024 chars | ✅ | 450 chars |
 | A9 | Event code SSF2026 in project description | ✅ | README, deck, form answers |
-| A10 | Solution actually runs on IBM Z / LinuxONE | ⏳ | VM provisioning; `setup_linuxone.sh` verified on clean Ubuntu 24.04 |
+| A10 | Solution actually runs on IBM Z / LinuxONE | ✅ | LinuxONE Community Cloud VM on an **IBM z17** (machine 9175, `nnpa` present): trained, 15/15 tests, full replay and dashboard served from it (`artifacts/linuxone/`) |
 | A11 | Architecture diagram | ✅ | README (Mermaid) + deck slide 5 |
-| A12 | Numbers identical across README, deck, form and `meta.json` | ✅ | PR-AUC 0.991; 28.2 / 82.1 / 96.2 %; 33,538 txns, 554 frauds |
+| A12 | Numbers identical across README, deck, form and `artifacts/linuxone/meta.json` | ✅ | PR-AUC 0.992; 28.2 / 79.6 / 97.3 %; 33,538 txns, 554 frauds |
 
 ## B. Product functionality
 
@@ -28,13 +28,14 @@ payments-grade security review. ✅ verified · ⏳ pending · ⚠️ known limi
 | B2 | Human-readable reasons, only on the risky side | ✅ | what-if attribution; age reasons only for accounts < 90 days |
 | B3 | Mule-flow features + watchlist | ✅ | `test_mule_pass_through_is_visible` |
 | B4 | Hinglish scam-call detection feeds payment risk | ✅ | `test_scam_call_raises_risk`; short or empty calls ignored |
-| B5 | Held-out accuracy | ✅ | 96.2 % recall at 0.1 % FPR vs 82.1 % per-txn ML vs 28.2 % rule |
-| B6 | Live replay outcome | ✅ | 97.8 % fraud stopped, 96.1 % of victim money protected, 0.058 % legit held, 0.107 % legit OTP |
-| B7 | Latency | ✅ | p50 26–31 µs, p99 ~64 µs end-to-end on x86 CPU |
-| B8 | Telum zDNN latency on s390x | ⏳ | `kavach/bench.py` runs CPU vs `zdnn_tensors` once on the VM |
+| B5 | Held-out accuracy (LinuxONE) | ✅ | 97.3 % recall at 0.1 % FPR vs 79.6 % per-txn ML vs 28.2 % rule (x86 run: 96.2 / 82.1 %) |
+| B6 | Live replay outcome (LinuxONE) | ✅ | 98.4 % fraud stopped, 96.2 % of victim money protected, 0.046 % legit held, 0.107 % legit OTP |
+| B7 | Latency on z17 | ✅ | CPU trees: p50 28 µs, p99 52 µs, ~285k txn/s (batch 64) |
+| B8 | Telum AI accelerator (zDNN) on z17 | ✅ | needed `libzdnn0` (now in setup); bit-identical predictions, 100 % decision agreement; p50 49 µs, slower than the cores for this small model, which the docs state honestly |
 | B9 | No training/serving skew, no leakage | ✅ | one streaming feature code path; time split; `test_features_only_use_the_past` |
 | B10 | Reproducible | ✅ | identical metrics on the laptop and in a clean Ubuntu 24.04 container |
-| B11 | Dashboard works (desktop + 390 px phone, no console errors) | ✅ | Playwright run; feed freezes on hover so rows are clickable |
+| B11 | Dashboard works (desktop + 390 px phone, no console errors) | ✅ | Playwright on the laptop and through an SSH tunnel to LinuxONE; feed freezes on hover so rows are clickable |
+| B11b | WebSocket on a minimal install | ✅ | bug found on LinuxONE (plain `uvicorn` has no WebSocket support → 404); fixed by pinning `websockets`, plus a regression test |
 | B12 | Amount-splitting by a fresh account with no call and no mule signal | ⚠️ | 6 × ₹4,999 to a new person is allowed; a cumulative new-payee limit is the next policy |
 | B13 | Synthetic data; call model trained on templates | ⚠️ | stated in README and deck |
 | B14 | Replay runs once | ⚠️ | restart the server for a fresh demo (~3 s) |
@@ -45,7 +46,7 @@ payments-grade security review. ✅ verified · ⏳ pending · ⚠️ known limi
 |---|---|---|---|
 | C1 | No secrets / keys in repo or full git history | ✅ | pattern scan of `git log -p --all`; no `.pem`, `.pub`, `.env` tracked; private key mode 600 |
 | C2 | Commit author email is public | ⚠️ | normal for GitHub; can switch to a noreply address |
-| C3 | Dependencies pinned and free of known CVEs | ✅ | `requirements.txt` + setup script pinned; `pip-audit`: 0 known vulnerabilities |
+| C3 | Dependencies pinned and free of known CVEs | ✅ | `requirements.txt` + setup script pinned (incl. `websockets`); `pip-audit`: 0 known vulnerabilities |
 | C4 | Static analysis | ✅ | `bandit`: 0 high, 0 medium (2 low = simulation RNG, not security-relevant) |
 | C5 | No unsafe deserialisation (CWE-502) | ✅ | pickle removed; CSV data; call model rebuilt deterministically |
 | C6 | Model integrity | ✅ | SHA-256 pinned in `meta.json`; tampered model refused (`test_tampered_model_is_refused`) |
@@ -61,8 +62,8 @@ payments-grade security review. ✅ verified · ⏳ pending · ⚠️ known limi
 | C16 | Audit trail | ✅ | `artifacts/audit.jsonl`, append-only, file mode 600, model hash per record |
 | C17 | Framing attack on innocent accounts | ✅ | fixed: watchlist needs ≥ 2 senders, expires in 72 h, and only adds an OTP to the suspect's own outflows |
 | C18 | Account takeover (new device, night, new payee) | ✅ | first ₹25k drain → STEP-UP, rest HOLD (`test_new_device_drain_is_stepped_up`) |
-| C19 | Network exposure | ✅ | server binds to 127.0.0.1; viewed through an SSH tunnel; VM SSH is key-only |
+| C19 | Network exposure | ✅ | on the VM the server listens on 127.0.0.1:8000 only (checked with `ss`); viewed through an SSH tunnel; API key file mode 600; SSH key-only |
 | C20 | Privacy | ✅ | synthetic data; no external AI APIs; transcripts not logged |
 | C21 | Production hardening beyond a hackathon | ⚠️ | still needs TLS/mTLS, a secrets manager/HSM, an analyst review queue, DPDP-compliant retention, and a shared rate limiter for multiple instances |
 
-**Test suite:** `python -m pytest -q tests` → 14 passed (laptop and clean Ubuntu 24.04).
+**Test suite:** `python -m pytest -q tests` → 15 passed on the laptop, 14/14 earlier on LinuxONE z17 and clean Ubuntu 24.04 (the 15th is the new WebSocket test).

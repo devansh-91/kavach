@@ -1,8 +1,6 @@
 .venv/
 __pycache__/
 artifacts/*
-!artifacts/meta.json
 !artifacts/bench_*.json
-!artifacts/train_log.txt
 !artifacts/linuxone/
 *.log
