@@ -6,6 +6,7 @@ Elsewhere it falls back to compressed trees on CPU. Same code, same model file.
 """
 import hashlib
 import json
+import math
 import os
 import platform
 import time
@@ -113,9 +114,30 @@ class Engine:
         # only report a feature when its value sits on the risky side of normal
         risky = np.where(LOW_IS_RISKY, x < self.baseline, x > self.baseline) & (~IS_AGE | (x < YOUNG))
         drop = np.where(risky, drop, 0.0)
+        if drop.max() <= 0.02 and risky.any():
+            # signals that only matter together, or that each push risk to 100% on their own: no single reset
+            # moves it. Share the risk out fairly instead (exact Shapley values over the risky features).
+            drop = self._shapley(x, np.flatnonzero(risky))
         idx = np.argsort(-drop)[:k]
         return [{"feature": FEATURES[i], "label": LABELS[FEATURES[i]], "impact": round(float(drop[i]), 3)}
                 for i in idx if drop[i] > 0.02]
+
+    def _shapley(self, x, R, cap=10):
+        """Exact Shapley value of each feature in R, the rest of R at the legit baseline (2^|R| model rows)."""
+        R = R[np.argsort(-np.abs(x[R] - self.baseline[R]) / (np.abs(self.baseline[R]) + 1))[:cap]]
+        m = len(R)
+        masks = np.arange(2 ** m)
+        bits = ((masks[:, None] >> np.arange(m)) & 1).astype(bool)
+        Z = np.repeat(x[None, :], 2 ** m, axis=0)
+        Z[:, R] = np.where(bits, x[R], self.baseline[R])
+        v = self.model.predict_proba(Z)[:, 1]
+        size = bits.sum(1)
+        w = np.array([math.factorial(s) * math.factorial(m - s - 1) / math.factorial(m) for s in range(m)])
+        phi = np.zeros(len(FEATURES))
+        for j, f in enumerate(R):
+            out = ~bits[:, j]
+            phi[f] = (w[size[out]] * (v[masks[out] | (1 << j)] - v[masks[out]])).sum()
+        return phi
 
     def score(self, t, explain=True):
         t0 = time.perf_counter()

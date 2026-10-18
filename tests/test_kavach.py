@@ -167,3 +167,14 @@ def test_ordinary_payments_flow(engine):
     rs = [engine.score(engine.enrich({"sender": f"U00{310 + i}", "receiver": "M0011", "amount": 350, "ts": ts + i}))
           for i in range(20)]
     assert all(r["decision"] == "ALLOW" for r in rs)
+
+
+def test_every_flag_explains_itself(engine):
+    # a scam call plus a payment that is risky for several reasons at once: no single feature reset lowers the
+    # risk, so the Shapley fallback must still name the drivers (this used to come back with no reasons at all)
+    ts = 5 * 86400 + 15 * 3600 + 3000
+    engine.score(engine.enrich({"sender": "U00344", "receiver": "U00270", "amount": 15000.0, "ts": ts, "txn_id": "x1"}))
+    engine.score_call("U00344", ts + 1, CALL)
+    r = engine.score(engine.enrich({"sender": "U00344", "receiver": "U00270", "amount": 15000.0, "ts": ts + 2, "txn_id": "x2"}))
+    assert r["decision"] != "ALLOW"
+    assert "Scam call shortly before payment" in [x["label"] for x in r["reasons"]]
