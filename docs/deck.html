@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Kavach · Pitch Deck</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+@page{size:1280px 720px;margin:0}
+:root{--bg:#0b0f17;--panel:#121826;--line:#24304a;--text:#e6ebf5;--muted:#8a96ad;--blue:#4c8dff;--hold:#ff4d5e;--step:#ffb020;--allow:#2ecc8f;--violet:#a07cff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.s{width:1280px;height:720px;padding:56px 72px;position:relative;overflow:hidden;page-break-after:always;background:radial-gradient(circle at 85% 10%,#16244a 0,transparent 45%),var(--bg)}
+.tag{font:700 13px 'JetBrains Mono';color:var(--blue);letter-spacing:2px;text-transform:uppercase}
+h1{font-size:64px;line-height:1.05;margin:16px 0;font-weight:800;letter-spacing:-1.5px}
+h2{font-size:40px;line-height:1.15;margin:12px 0 26px;font-weight:800;letter-spacing:-.8px}
+p,li{font-size:20px;line-height:1.5;color:#c8d1e3}
+.muted{color:var(--muted)}
+.foot{position:absolute;left:72px;right:72px;bottom:26px;display:flex;justify-content:space-between;font:500 12px 'JetBrains Mono';color:#5b6780}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:28px}
+.c3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+.card h3{margin:0 0 8px;font-size:21px}
+.card p{font-size:16px;margin:0}
+.big{font:800 52px 'JetBrains Mono';letter-spacing:-1px}
+.pill{display:inline-block;font:700 14px 'JetBrains Mono';padding:5px 12px;border-radius:6px}
+.HOLD{background:var(--hold);color:#fff}.STEP{background:var(--step);color:#1b1200}.ALLOW{background:var(--allow);color:#06281b}
+.flow{display:flex;align-items:center;gap:14px;margin-top:10px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:15px;line-height:1.35}
+.box b{display:block;font-size:16px;margin-bottom:3px}
+.arrow{color:var(--blue);font-size:26px}
+.bar{height:34px;background:#1c2539;border-radius:8px;overflow:hidden}
+.bar i{display:block;height:100%}
+.row{display:grid;grid-template-columns:340px 1fr 110px;gap:18px;align-items:center;margin:16px 0;font-size:19px}
+table{border-collapse:collapse;width:100%;font-size:17px}
+td,th{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.5px}
+.src{font-size:11px;color:#5b6780;position:absolute;left:72px;bottom:48px;right:72px}
+</style>
+</head>
+<body>
+
+<!-- 1 -->
+<section class="s" style="display:flex;flex-direction:column;justify-content:center">
+  <svg width="74" height="74" viewBox="0 0 32 32" fill="none"><path d="M16 2l11 4v9c0 7-4.7 12.4-11 15-6.3-2.6-11-8-11-15V6l11-4z" fill="#13234a" stroke="#4c8dff" stroke-width="1.6"/><path d="M11 16l3.5 3.5L21.5 12" stroke="#2ecc8f" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="tag" style="margin-top:22px">IBM Z Datathon 2026 · SSF2026 · Real-Time AI for Critical Decisions</div>
+  <h1>Kavach</h1>
+  <p style="font-size:28px;max-width:900px;color:#e6ebf5;margin:0">Stops UPI scams <i>inside</i> the transaction — by watching the payment, the money flow, and the scam call together.</p>
+  <p class="muted" style="margin-top:28px">In-transaction AI on IBM LinuxONE · Snap ML on the Telum on-chip AI accelerator</p>
+  <div class="foot"><span>Kavach</span><span>1</span></div>
+</section>
+
+<!-- 2 -->
+<section class="s">
+  <div class="tag">The problem</div>
+  <h2>Scam money leaves in seconds and is laundered in minutes</h2>
+  <div class="c3">
+    <div class="card"><div class="big" style="color:var(--hold)">₹22,845 Cr</div><p>lost by Indians to cyber fraud in 2024 — a 206% jump over 2023.¹</p></div>
+    <div class="card"><div class="big" style="color:var(--step)">₹1,616 Cr</div><p>lost to "digital arrest" scams in just the first 9 months of 2024.²</p></div>
+    <div class="card"><div class="big" style="color:var(--violet)">24 lakh</div><p>Layer-1 mule accounts already reported to the national Suspect Registry.¹</p></div>
+  </div>
+  <p style="margin-top:34px;max-width:1080px">A victim on a fake "CBI" video call sends ₹50,000 over UPI. The receiving <b>mule</b> forwards it to the next account within minutes, then cashes out. By the time anyone reports it, the money is gone.</p>
+  <div class="src">¹ MHA reply in Lok Sabha via Scroll.in (2025). ² I4C data via The Indian Express / The Wire (2024).</div>
+  <div class="foot"><span>Kavach</span><span>2</span></div>
+</section>
+
+<!-- 3 -->
+<section class="s">
+  <div class="tag">Why today's defences miss it</div>
+  <h2>Each signal alone looks innocent</h2>
+  <div class="c3">
+    <div class="card"><h3>Rules</h3><p>"Amount &gt; ₹20k to a new payee" catches only <b>28%</b> of scams while blocking <b>2%</b> of honest payments — and scammers simply split amounts.</p></div>
+    <div class="card"><h3>Per-transaction ML</h3><p>Sees one payment at a time. It cannot see that the receiver collected from 9 strangers today, or that the sender just got off a scam call.</p></div>
+    <div class="card"><h3>After-the-fact</h3><p>Batch analytics and complaint portals act after settlement. Recovery after layering through mule chains is rare.</p></div>
+  </div>
+  <p style="margin-top:34px">Stopping scams needs <b>more context</b> and a decision <b>before money settles</b> — on every payment, not a sample.</p>
+  <div class="foot"><span>Kavach</span><span>3</span></div>
+</section>
+
+<!-- 4 -->
+<section class="s">
+  <div class="tag">Solution</div>
+  <h2>Three signals, one decision, in microseconds</h2>
+  <div class="c3">
+    <div class="card"><h3 style="color:var(--blue)">① The payment</h3><p>Amount vs. the sender's habits, first payment to this person, new device, odd hour, bursts of payments.</p></div>
+    <div class="card"><h3 style="color:var(--violet)">② The money flow</h3><p>Mule graph features: receiver fan-in from first-time payers, pass-through (money out minutes after money in). Repeat offenders go on a <b>mule watchlist</b> and are frozen.</p></div>
+    <div class="card"><h3 style="color:var(--hold)">③ The scam call</h3><p>Hinglish call-transcript classifier spots "digital arrest", fake KYC, screen-share scripts. Risk attaches to the user for 2 hours.</p></div>
+  </div>
+  <div style="display:flex;gap:18px;margin-top:34px;align-items:center;font-size:19px">
+    <span class="pill ALLOW">ALLOW</span><span class="muted">settle</span>
+    <span class="pill STEP" style="margin-left:18px">STEP-UP</span><span class="muted">OTP + cooling-off + scam warning</span>
+    <span class="pill HOLD" style="margin-left:18px">HOLD</span><span class="muted">block, alert victim, notify bank</span>
+  </div>
+  <p class="muted" style="margin-top:18px;font-size:17px">Every flag comes with plain-language reasons, e.g. "Scam call shortly before payment · Receiver collecting from many senders".</p>
+  <div class="foot"><span>Kavach</span><span>4</span></div>
+</section>
+
+<!-- 5 -->
+<section class="s">
+  <div class="tag">Architecture</div>
+  <h2>Scoring lives next to the payment, on IBM Z</h2>
+  <div class="flow">
+    <div class="box" style="width:190px"><b>UPI payment</b>sender, receiver, amount, device</div><span class="arrow">→</span>
+    <div style="display:grid;gap:10px;width:270px">
+      <div class="box"><b>Streaming feature store</b>sender habits · bursts · device</div>
+      <div class="box" style="border-color:#4b3a8a"><b>Mule-flow features</b>fan-in · first-time payers · pass-through</div>
+      <div class="box" style="border-color:#7a2a35"><b>Scam-call risk</b>Hinglish transcript classifier</div>
+    </div><span class="arrow">→</span>
+    <div class="box" style="width:250px;border-color:#2d5bd6;background:#13234a"><b>IBM Snap ML boosted trees</b>PMML → <span style="font-family:'JetBrains Mono'">tree_format="auto"</span><br>→ zDNN on the <b style="display:inline">Telum on-chip AI accelerator</b></div><span class="arrow">→</span>
+    <div style="display:grid;gap:10px;width:200px">
+      <div class="box"><span class="pill ALLOW">ALLOW</span></div>
+      <div class="box"><span class="pill STEP">STEP-UP</span></div>
+      <div class="box"><span class="pill HOLD">HOLD</span> → mule watchlist</div>
+    </div>
+  </div>
+  <p style="margin-top:30px;font-size:18px">One code path: the same streaming feature code builds training data and scores live payments, strictly from past events — no leakage, no training/serving skew. FastAPI + WebSocket dashboard; REST API for calls and payments.</p>
+  <div class="foot"><span>Kavach</span><span>5</span></div>
+</section>
+
+<!-- 6 -->
+<section class="s">
+  <div class="tag">Why IBM Z / LinuxONE</div>
+  <h2>Score 100% of payments in-line, where they already run</h2>
+  <div class="cols">
+    <div class="card"><h3>Telum on-chip AI accelerator</h3><p>Snap ML compiles our trees to zDNN tensors on z16/z17, so inference runs on the processor chip next to the transaction workload — no network hop to a separate AI server.</p></div>
+    <div class="card"><h3>Built and run on LinuxONE</h3><p>Trained, benchmarked and served on a LinuxONE Community Cloud VM (s390x). One setup script; same model file falls back to CPU elsewhere.</p></div>
+    <div class="card"><h3>Data never leaves the platform</h3><p>Payment and call data stay on Z with pervasive encryption. No external AI APIs, no data copies to a GPU cloud.</p></div>
+    <div class="card"><h3>Scale & reliability</h3><p>UPI does billions of payments a month with spikes at salary day and festivals. In-transaction AI must keep up with the core system itself — Z's throughput and uptime are made for this.</p></div>
+  </div>
+  <div class="foot"><span>Kavach</span><span>6</span></div>
+</section>
+
+<!-- 7 -->
+<section class="s">
+  <div class="tag">Results · held-out days, never seen in training</div>
+  <h2>Same false-alarm budget, far more scams stopped</h2>
+  <div class="row"><span>Rule: &gt;₹20k to new payee <span class="muted" style="font-size:14px">(2% FPR)</span></span><div class="bar"><i style="width:28.2%;background:#5b6780"></i></div><b style="font-family:'JetBrains Mono';font-size:24px">28.2%</b></div>
+  <div class="row"><span>Per-transaction ML <span class="muted" style="font-size:14px">(0.1% FPR)</span></span><div class="bar"><i style="width:82.1%;background:var(--blue)"></i></div><b style="font-family:'JetBrains Mono';font-size:24px">82.1%</b></div>
+  <div class="row"><span><b>Kavach</b> + mule flow + scam calls <span class="muted" style="font-size:14px">(0.1% FPR)</span></span><div class="bar"><i style="width:96.2%;background:var(--allow)"></i></div><b style="font-family:'JetBrains Mono';font-size:24px;color:var(--allow)">96.2%</b></div>
+  <div class="c3" style="margin-top:30px">
+    <div class="card"><div class="big" style="font-size:40px">0.991</div><p>PR-AUC on 33,538 unseen payments (554 frauds)</p></div>
+    <div class="card"><div class="big" style="font-size:40px">26 µs</div><p>p50 full in-transaction path (features + model + decision), CPU baseline</p></div>
+    <div class="card"><div class="big" style="font-size:40px">0.06%</div><p>legit payments held in the live replay; 97% of fraud payments stopped</p></div>
+  </div>
+  <div class="foot"><span>Kavach</span><span>7</span></div>
+</section>
+
+<!-- 8 -->
+<section class="s" style="padding-top:40px">
+  <div class="tag">Live demo</div>
+  <h2 style="margin-bottom:14px">Real-time dashboard: decisions, mule network, scam calls</h2>
+  <img src="dashboard.png" style="width:100%;height:520px;object-fit:cover;object-position:top;border-radius:12px;border:1px solid var(--line)">
+  <div class="foot"><span>Kavach</span><span>8</span></div>
+</section>
+
+<!-- 9 -->
+<section class="s">
+  <div class="tag">Data & honesty</div>
+  <h2>Synthetic, but built to be hard</h2>
+  <div class="cols">
+    <div>
+      <p>Real UPI data with mule labels is not public, so we simulate a reproducible UPI world: <b>5,000 users</b>, merchants, kirana shops, <b>90 mules + 25 cash-out accounts</b>, 7 days, <b>~117k payments, ~14k calls</b>.</p>
+      <p>Scams: digital arrest, fake KYC, account takeover, ₹1 "test" payments, repeat victims, multi-hop layering.</p>
+    </div>
+    <div class="card">
+      <h3>Hard negatives on purpose</h3>
+      <p>Friends pooling trip money then paying an agent minutes later · legit big first-time payments · phone changes · night owls · real bank fraud-alert calls · older mule accounts · scam calls seen for only 55% of victims.</p>
+    </div>
+  </div>
+  <p class="muted" style="font-size:17px;margin-top:24px">Limits: call classifier trained on template Hinglish; watchlist rule is simple. Everything is reproducible with one command.</p>
+  <div class="foot"><span>Kavach</span><span>9</span></div>
+</section>
+
+<!-- 10 -->
+<section class="s">
+  <div class="tag">Impact & next steps</div>
+  <h2>From demo to a bank's payment switch</h2>
+  <div class="cols">
+    <div>
+      <ul>
+        <li>Plugs into the bank / PSP authorisation path as a REST call — <b>no change for users</b> until risk is real.</li>
+        <li>Cooling-off instead of hard blocks keeps honest users moving.</li>
+        <li>Watchlist feeds the national <b>Suspect Registry</b>-style sharing between banks.</li>
+      </ul>
+    </div>
+    <div>
+      <ul>
+        <li>Graph neural features over the full account graph.</li>
+        <li>Federated training across banks without sharing raw data.</li>
+        <li>On-device Hinglish ASR so call audio never leaves the phone.</li>
+        <li>Benchmark at UPI scale on z17 with Spyre.</li>
+      </ul>
+    </div>
+  </div>
+  <p style="margin-top:40px;font-size:24px;color:#e6ebf5"><b>Kavach</b> — the shield sits inside the payment, not after it.</p>
+  <div class="foot"><span>github.com/devansh-91/kavach · SSF2026</span><span>10</span></div>
+</section>
+</body>
+</html>
