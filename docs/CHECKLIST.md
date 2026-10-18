@@ -66,4 +66,4 @@ payments-grade security review. ✅ verified · ⏳ pending · ⚠️ known limi
 | C20 | Privacy | ✅ | synthetic data; no external AI APIs; transcripts not logged |
 | C21 | Production hardening beyond a hackathon | ⚠️ | still needs TLS/mTLS, a secrets manager/HSM, an analyst review queue, DPDP-compliant retention, and a shared rate limiter for multiple instances |
 
-**Test suite:** `python -m pytest -q tests` → 15 passed on the laptop, 14/14 earlier on LinuxONE z17 and clean Ubuntu 24.04 (the 15th is the new WebSocket test).
+**Test suite:** `python -m pytest -q tests` → 15 passed on the laptop and on LinuxONE z17 (14/14 in a clean Ubuntu 24.04 container before the WebSocket test was added).
