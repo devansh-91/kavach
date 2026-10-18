@@ -61,3 +61,101 @@ def test_api_validation():
         r = c.post("/api/txn", json={"sender": "U00001", "receiver": "M0001", "amount": 250})
         assert r.status_code == 200 and r.json()["decision"] in ("ALLOW", "STEP_UP", "HOLD")
         assert c.get("/api/health").json()["accelerator"]["tree_format"] in ("compress_trees", "zdnn_tensors")
+
+
+# ---- security -----------------------------------------------------------------
+def _client(monkeypatch, key=""):
+    import importlib
+    import kavach.server as srv
+    monkeypatch.setenv("KAVACH_API_KEY", key)
+    return TestClient(importlib.reload(srv).app)
+
+
+def test_api_key_required_when_configured(monkeypatch):
+    with _client(monkeypatch, "s3cret") as c:
+        body = {"sender": "U00001", "receiver": "M0001", "amount": 250}
+        assert c.post("/api/txn", json=body).status_code == 401
+        assert c.post("/api/txn", json=body, headers={"X-API-Key": "wrong"}).status_code == 401
+        assert c.post("/api/control", json={"paused": True}).status_code == 401
+        assert c.post("/api/txn", json=body, headers={"X-API-Key": "s3cret"}).status_code == 200
+        with c.websocket_connect("/ws") as ws:   # wrong key -> closed with policy violation
+            ws.send_text('{"key": "nope"}')
+            with pytest.raises(Exception):
+                ws.receive_json()
+        with c.websocket_connect("/ws") as ws:
+            ws.send_text('{"key": "s3cret"}')
+            assert ws.receive_json()["type"] == "hello"
+
+
+def test_rejects_malformed_and_hostile_input(monkeypatch):
+    with _client(monkeypatch) as c:
+        bad = [
+            {"sender": "U1", "receiver": "U2", "amount": "NaN"},
+            {"sender": "U1", "receiver": "U2", "amount": "Infinity"},
+            {"sender": "U1", "receiver": "U2", "amount": 1e9},
+            {"sender": "<script>", "receiver": "U2", "amount": 5},
+            {"sender": "U1", "receiver": "U2", "amount": 5, "is_admin": True},
+            {"sender": "U1" * 40, "receiver": "U2", "amount": 5},
+        ]
+        for b in bad:
+            assert c.post("/api/txn", json=b).status_code == 422, b
+        assert c.post("/api/control", json={"speed": 1e9}).status_code == 422
+
+
+def test_security_headers_and_no_docs(monkeypatch):
+    with _client(monkeypatch) as c:
+        r = c.get("/")
+        assert "frame-ancestors 'none'" in r.headers["content-security-policy"]
+        assert "unsafe-inline" not in r.headers["content-security-policy"].split("script-src")[1].split(";")[0]
+        assert r.headers["x-frame-options"] == "DENY" and r.headers["x-content-type-options"] == "nosniff"
+        assert c.get("/docs").status_code == 404 and c.get("/openapi.json").status_code == 404
+        assert c.get("/api/health").headers["cache-control"] == "no-store"
+        pre = c.options("/api/txn", headers={"Origin": "https://evil.example", "Access-Control-Request-Method": "POST"})
+        assert "access-control-allow-origin" not in pre.headers   # no CORS -> other sites can't call the API
+
+
+def test_rate_limit(monkeypatch):
+    with _client(monkeypatch) as c:
+        codes = [c.get("/api/health").status_code for _ in range(80)]
+        assert 429 in codes
+
+
+def test_fail_safe_never_allows_on_error(monkeypatch):
+    import kavach.server as srv
+    with _client(monkeypatch) as c:
+        import kavach.server as srv
+        monkeypatch.setattr(srv.engine, "score", lambda t: 1 / 0)
+        r = c.post("/api/txn", json={"sender": "U00001", "receiver": "U00002", "amount": 900})
+        assert r.status_code == 200 and r.json()["decision"] == "STEP_UP"
+
+
+def test_tampered_model_is_refused(tmp_path, monkeypatch):
+    import kavach.engine as eng
+    bad = tmp_path / "m.pmml"
+    bad.write_text(eng.MODEL.read_text().replace("<Segment", "<Segment ", 1))
+    monkeypatch.setattr(eng, "MODEL", bad)
+    with pytest.raises(RuntimeError, match="integrity"):
+        eng.Engine(warmup=False)
+
+
+# ---- abuse / robustness ---------------------------------------------------------
+def test_framing_attack_cannot_freeze_an_innocent_account(engine):
+    ts = 5 * 86400 + 2 * 3600
+    for i, attacker in enumerate(["X071", "X072", "X073"]):  # risky money pushed into a victim's account
+        engine.score(engine.enrich({"sender": attacker, "receiver": "U04001", "amount": 60000,
+                                    "ts": ts + i * 60, "device": f"BAD{i}"}))
+    own = engine.score(engine.enrich({"sender": "U04001", "receiver": "M0003", "amount": 800, "ts": ts + 900}))
+    assert own["decision"] != "HOLD"          # at most an OTP, never a freeze
+
+
+def test_new_device_drain_is_stepped_up(engine):
+    r = engine.score(engine.enrich({"sender": "U00203", "receiver": "U03003", "amount": 25000,
+                                    "ts": 5 * 86400 + 3 * 3600, "device": "EVILPHONE"}))
+    assert r["decision"] in ("STEP_UP", "HOLD")
+
+
+def test_ordinary_payments_flow(engine):
+    ts = 5 * 86400 + 11 * 3600
+    rs = [engine.score(engine.enrich({"sender": f"U00{310 + i}", "receiver": "M0011", "amount": 350, "ts": ts + i}))
+          for i in range(20)]
+    assert all(r["decision"] == "ALLOW" for r in rs)

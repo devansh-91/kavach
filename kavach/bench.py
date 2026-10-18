@@ -8,9 +8,8 @@ import platform
 import time
 
 import numpy as np
-import pandas as pd
 
-from .engine import ART, Engine
+from .engine import ART, Engine, read_csv
 
 FORMATS = ["compress_trees"] + (["zdnn_tensors"] if platform.machine() == "s390x" else [])
 
@@ -40,7 +39,7 @@ def run(tree_format, txns, batch_sizes=(1, 64, 1024)):
 
 
 def main():
-    txns = pd.read_pickle(ART / "replay_txns.pkl").head(20000).to_dict("records")
+    txns = read_csv(ART / "replay_txns.csv.gz").head(20000).to_dict("records")
     out = {"arch": platform.machine(), "cpu": platform.processor() or platform.platform(),
            "n_txns": len(txns), "results": []}
     for fmt in FORMATS:

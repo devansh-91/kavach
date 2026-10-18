@@ -1,5 +1,5 @@
 world: 117,377 txns (1.76% fraud), 14,132 calls  [0.8s]
-features: (117377, 21)  [5.0s]
+features: (117377, 21)  [5.3s]
 {
   "pr_auc": 0.9905910803825984,
   "roc_auc": 0.9997201903384291,
@@ -42,4 +42,4 @@ features: (117377, 21)  [5.0s]
     "fpr": 0.0010004850836769343
   }
 }
-done [11.7s] -> /home/warrior/kavach/artifacts
+done [14.3s] -> /home/warrior/kavach/artifacts

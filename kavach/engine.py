@@ -4,28 +4,41 @@ On IBM z16/z17 (LinuxONE) Snap ML's import_model(tree_format="auto") compiles th
 trees to zDNN tensors and runs inference on the on-chip Integrated Accelerator for AI (Telum).
 Elsewhere it falls back to compressed trees on CPU. Same code, same model file.
 """
+import hashlib
 import json
 import platform
 import time
 from collections import defaultdict, deque
 from pathlib import Path
 
-import joblib
 import numpy as np
 import pandas as pd
 from snapml import BoostingMachineClassifier
 
+from .calls import train_call_model
 from .features import FEATURES, LABELS, FeatureStore
 
 ART = Path(__file__).resolve().parent.parent / "artifacts"
-WATCH_HOLDS = 2          # holds into one account within 24h -> mule watchlist
+MODEL = ART / "kavach_gbm.pmml"
+WATCH_SENDERS = 2        # held payments from >= 2 different senders within 24h -> mule watchlist
 WATCH_WINDOW = 86400.0
+WATCH_TTL = 3 * 86400.0  # watchlist entries expire unless an analyst confirms them
+NEW_DEVICE_LIMIT = 10000  # first payment to a new payee from a new device above this needs re-verification
 LOW_IS_RISKY = np.array([f in ("sender_age", "receiver_age", "recv_hist_in", "receiver_is_merchant",
                                 "sender_mins_since_in") for f in FEATURES])
 IS_AGE = np.array([f in ("sender_age", "receiver_age") for f in FEATURES])
 YOUNG = np.log1p(90)  # "new account" only means < 90 days
 SCAM_CALL = 0.8
-I_CALL, I_NEW = FEATURES.index("scam_call_risk_2h"), FEATURES.index("new_payee")
+I_CALL, I_NEW, I_DEV = (FEATURES.index(f) for f in ("scam_call_risk_2h", "new_payee", "new_device"))
+
+
+def sha256(path):
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def read_csv(path):
+    """Data files are plain CSV (no pickle), parsed with exact float round-trip."""
+    return pd.read_csv(path, float_precision="round_trip", keep_default_na=False)
 
 
 def accelerator_info(model):
@@ -41,10 +54,14 @@ class Engine:
         self.thr_step, self.thr_hold = meta["thr_step"], meta["thr_hold"]
         self.baseline = np.asarray(meta["baseline"], dtype=np.float32)
         self.metrics = meta["metrics"]
+        # refuse to serve a model file that differs from the one that was trained and evaluated
+        self.model_sha256 = sha256(MODEL)
+        if self.model_sha256 != meta["model_sha256"]:
+            raise RuntimeError(f"model integrity check failed for {MODEL}")
         self.model = BoostingMachineClassifier()
-        self.model.import_model(str(ART / "kavach_gbm.pmml"), "pmml", tree_format=tree_format)
+        self.model.import_model(str(MODEL), "pmml", tree_format=tree_format)
         self.accel = accelerator_info(self.model)
-        self.call_model = joblib.load(ART / "call_model.joblib")
+        self.call_model = train_call_model()  # deterministic, ~1 s; avoids loading pickled code
         self.fs = FeatureStore()
         self.holds_into = defaultdict(deque)   # receiver -> ts of held payments
         self.watchlist = {}                     # acct -> ts added
@@ -54,8 +71,8 @@ class Engine:
             self._warmup()
 
     def _warmup(self):
-        tx = pd.read_pickle(ART / "history_txns.pkl").to_dict("records")
-        calls = pd.read_pickle(ART / "history_calls.pkl")
+        tx = read_csv(ART / "history_txns.csv.gz").to_dict("records")
+        calls = read_csv(ART / "history_calls.csv.gz")
         risk = self.call_model.predict_proba(calls.transcript)[:, 1]
         for c, r in zip(calls.to_dict("records"), risk):
             self.fs.observe_call(c["user"], c["ts"], float(r))
@@ -111,20 +128,26 @@ class Engine:
         if decision == "ALLOW" and x[I_CALL] >= SCAM_CALL and x[I_NEW] and t["amount"] >= 1000:
             decision, p = "STEP_UP", max(p, self.thr_step)
             network.append("Scam call in last 2h + first payment to new payee")
-        if r in self.watchlist and decision != "HOLD":
+        if decision == "ALLOW" and x[I_DEV] and x[I_NEW] and t["amount"] >= NEW_DEVICE_LIMIT:
+            decision, p = "STEP_UP", max(p, self.thr_step)
+            network.append("New device + first payment to new payee (device cooling-off)")
+        # watchlist protects further victims (inflows held). The suspect's own outflows are only stepped
+        # up, never frozen, so an attacker who pushes risky money into an innocent account can't lock them out.
+        if self._watched(r, ts) and decision != "HOLD":
             decision, p = "HOLD", max(p, self.thr_hold)
-            network.append("Receiver is on mule watchlist")
-        if s in self.watchlist and decision != "HOLD":
-            decision, p = "HOLD", max(p, self.thr_hold)
-            network.append("Sender is a suspected mule - outflow frozen")
+            network.append("Receiver is on mule watchlist (pending analyst review)")
+        if self._watched(s, ts) and decision == "ALLOW":
+            decision, p = "STEP_UP", max(p, self.thr_step)
+            network.append("Sender is a suspected mule - verify before outflow")
 
         newly_watched = None
         if decision == "HOLD":
             q = self.holds_into[r]
-            q.append(ts)
-            while q and q[0] < ts - WATCH_WINDOW:
+            q.append((ts, s))
+            while q and q[0][0] < ts - WATCH_WINDOW:
                 q.popleft()
-            if len(q) >= WATCH_HOLDS and r not in self.watchlist and t["receiver_type"] != "M":
+            if (len({x_[1] for x_ in q}) >= WATCH_SENDERS and not self._watched(r, ts)
+                    and t["receiver_type"] != "M"):
                 self.watchlist[r] = ts
                 newly_watched = r
         self._remember(t)
@@ -136,6 +159,15 @@ class Engine:
                 "risk": round(p, 4), "decision": decision, "reasons": reasons,
                 "latency_ms": round(ms, 3), "new_watchlist": newly_watched,
                 "label": t.get("label"), "kind": t.get("kind")}
+
+    def _watched(self, acct, ts):
+        added = self.watchlist.get(acct)
+        if added is None:
+            return False
+        if ts - added > WATCH_TTL:
+            del self.watchlist[acct]
+            return False
+        return True
 
     def latency_stats(self):
         if not self.latencies:

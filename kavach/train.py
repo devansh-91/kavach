@@ -6,13 +6,13 @@ import json
 import time
 from pathlib import Path
 
-import joblib
 import numpy as np
 import pandas as pd
 from sklearn.metrics import average_precision_score, roc_auc_score
 from snapml import BoostingMachineClassifier
 
 from .calls import train_call_model
+from .engine import MODEL, sha256
 from .features import FEATURES, FeatureStore
 from .simulate import DAY, World
 
@@ -67,7 +67,7 @@ def main():
     model = BoostingMachineClassifier(num_round=300, max_depth=6, learning_rate=0.1,
                                       colsample_bytree=0.8, subsample=0.8, n_jobs=4, random_state=0)
     model.fit(Xtr, ytr)
-    model.export_model(str(ART / "kavach_gbm.pmml"), output_type="pmml")
+    model.export_model(str(MODEL), output_type="pmml")
     p = model.predict_proba(Xte)[:, 1]
 
     thr_step, thr_hold = 0.30, 0.80
@@ -93,15 +93,15 @@ def main():
     }
     print(json.dumps(metrics["ablation_recall_at_0.1pct_fpr"], indent=2))
 
-    joblib.dump(call_model, ART / "call_model.joblib")
     meta = {"features": FEATURES, "baseline": np.median(Xtr[ytr == 0], axis=0).tolist(),
+            "model_sha256": sha256(MODEL),
             "thr_step": thr_step, "thr_hold": thr_hold, "metrics": metrics}
     (ART / "meta.json").write_text(json.dumps(meta, indent=2))
-    tx[~split].to_pickle(ART / "replay_txns.pkl")
-    calls[calls.ts >= 5 * DAY - 2 * 3600].drop(columns="risk").to_pickle(ART / "replay_calls.pkl")
+    tx[~split].to_csv(ART / "replay_txns.csv.gz", index=False)
+    calls[calls.ts >= 5 * DAY].drop(columns="risk").to_csv(ART / "replay_calls.csv.gz", index=False)
     # warm-up history (days 0-4) so the live feature store starts with realistic state
-    tx[split].to_pickle(ART / "history_txns.pkl")
-    calls[calls.ts < 5 * DAY].drop(columns="risk").to_pickle(ART / "history_calls.pkl")
+    tx[split].to_csv(ART / "history_txns.csv.gz", index=False)
+    calls[calls.ts < 5 * DAY].drop(columns="risk").to_csv(ART / "history_calls.csv.gz", index=False)
     print(f"done [{time.time()-t0:.1f}s] -> {ART}")
 
 

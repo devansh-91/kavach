@@ -1,8 +1,9 @@
-numpy
-pandas
-scikit-learn
-scipy
-joblib
-snapml>=1.17
-fastapi
-uvicorn
+# versions tested on x86-64; on LinuxONE setup_linuxone.sh takes numpy/pandas/sklearn/scipy from the distro
+numpy==2.5.4
+pandas==3.0.6
+scikit-learn==1.9.1
+scipy==1.18.1
+snapml==1.17.2
+fastapi==0.143.3
+pydantic==2.14.1
+uvicorn==0.54.0

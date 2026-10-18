@@ -45,6 +45,7 @@
     7.012932300567627,
     0.0
   ],
+  "model_sha256": "c20d0e861b1856283e82bae35932f4ed91c7e529ed5dd9a70eb477bedf38cbb6",
   "thr_step": 0.3,
   "thr_hold": 0.8,
   "metrics": {

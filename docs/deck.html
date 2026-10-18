@@ -139,7 +139,7 @@ th{color:var(--muted);font-weight:600;font-size:14px;text-transform:uppercase;le
   <div class="c3" style="margin-top:30px">
     <div class="card"><div class="big" style="font-size:40px">0.991</div><p>PR-AUC on 33,538 unseen payments (554 frauds)</p></div>
     <div class="card"><div class="big" style="font-size:40px">26 µs</div><p>p50 full in-transaction path (features + model + decision), CPU baseline</p></div>
-    <div class="card"><div class="big" style="font-size:40px">0.06%</div><p>legit payments held in the live replay; 97% of fraud payments stopped</p></div>
+    <div class="card"><div class="big" style="font-size:40px">0.06%</div><p>legit payments held in the live replay, while 97.8% of fraud payments were stopped</p></div>
   </div>
   <div class="foot"><span>Kavach</span><span>7</span></div>
 </section>
@@ -170,7 +170,23 @@ th{color:var(--muted);font-weight:600;font-size:14px;text-transform:uppercase;le
   <div class="foot"><span>Kavach</span><span>9</span></div>
 </section>
 
-<!-- 10 -->
+<!-- 10 security -->
+<section class="s">
+  <div class="tag">Built for a payments environment</div>
+  <h2>Secure by default, and it fails safe</h2>
+  <div class="c3">
+    <div class="card"><h3>Fail-safe</h3><p>If scoring ever breaks, the payment is stepped up for verification, never silently allowed.</p></div>
+    <div class="card"><h3>Tamper-evident model</h3><p>The model file's SHA-256 is pinned at training time and checked at start-up. No pickle anywhere.</p></div>
+    <div class="card"><h3>Audit trail</h3><p>Every decision is logged with time, reasons and model version, ready for regulator and dispute review.</p></div>
+    <div class="card"><h3>Locked-down API</h3><p>API key with constant-time check, strict input schemas, per-IP rate limits, no CORS, docs off.</p></div>
+    <div class="card"><h3>Hardened dashboard</h3><p>Strict CSP, no inline scripts, SRI on CDN code, escaped output, anti-framing headers.</p></div>
+    <div class="card"><h3>Abuse-tested</h3><p>An attacker pushing dirty money into an innocent account cannot freeze it: the watchlist needs 2+ senders, expires, and only adds an OTP.</p></div>
+  </div>
+  <p class="muted" style="font-size:16px;margin-top:22px">14 automated tests incl. auth, headers, rate limits, model tampering and abuse cases · pip-audit: 0 known vulnerabilities · server bound to localhost, viewed via SSH tunnel.</p>
+  <div class="foot"><span>Kavach</span><span>10</span></div>
+</section>
+
+<!-- 11 -->
 <section class="s">
   <div class="tag">Impact & next steps</div>
   <h2>From demo to a bank's payment switch</h2>
@@ -192,7 +208,7 @@ th{color:var(--muted);font-weight:600;font-size:14px;text-transform:uppercase;le
     </div>
   </div>
   <p style="margin-top:40px;font-size:24px;color:#e6ebf5"><b>Kavach</b> — the shield sits inside the payment, not after it.</p>
-  <div class="foot"><span>github.com/devansh-91/kavach · SSF2026</span><span>10</span></div>
+  <div class="foot"><span>github.com/devansh-91/kavach · SSF2026</span><span>11</span></div>
 </section>
 </body>
 </html>
