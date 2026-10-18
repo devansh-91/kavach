@@ -51,7 +51,7 @@ payments-grade security review. ✅ verified · ⏳ pending · ⚠️ known limi
 | C5 | No unsafe deserialisation (CWE-502) | ✅ | pickle removed; CSV data; call model rebuilt deterministically |
 | C6 | Model integrity | ✅ | SHA-256 pinned in `meta.json`; tampered model refused (`test_tampered_model_is_refused`) |
 | C7 | Fail-safe, not fail-open | ✅ | engine error → STEP-UP (`test_fail_safe_never_allows_on_error`) |
-| C8 | Authentication | ✅ | `KAVACH_API_KEY`, constant-time compare; WebSocket key as first message, never in URLs |
+| C8 | Authentication | ✅ | `KAVACH_API_KEY`, constant-time compare; WebSocket key as first message, never in URLs; dashboard wipes `#key=` from the address bar on load |
 | C9 | Input validation | ✅ | NaN/Infinity, > ₹10 crore, ≤ 0, script tags, unknown fields, oversize IDs, self-payments → 422 |
 | C10 | Rate limiting / DoS | ✅ | per-IP token bucket → 429 (`test_rate_limit`); max 50 sockets; slow sockets dropped |
 | C11 | XSS | ✅ | all dynamic text escaped; CSP blocks inline script; `<img onerror>` payload did not run in the browser |

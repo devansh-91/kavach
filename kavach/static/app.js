@@ -1,5 +1,8 @@
 const $ = id => document.getElementById(id);
-const KEY = new URLSearchParams(location.hash.slice(1)).get('key') || '';
+// key comes from the #key= fragment; keep it for this tab only and wipe it from the address bar and history
+const tabKey = (k, v) => { try { return v === undefined ? sessionStorage.getItem(k) : sessionStorage.setItem(k, v); } catch { return null; } };
+const KEY = new URLSearchParams(location.hash.slice(1)).get('key') || tabKey('kavach_key') || '';
+if (KEY) { tabKey('kavach_key', KEY); history.replaceState(null, '', location.pathname + location.search); }
 const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const inr = n => '₹' + Math.round(n).toLocaleString('en-IN');
 const inrShort = n => n >= 1e7 ? '₹' + (n/1e7).toFixed(2) + ' Cr' : n >= 1e5 ? '₹' + (n/1e5).toFixed(1) + ' L' : inr(n);

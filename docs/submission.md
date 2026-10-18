@@ -33,6 +33,12 @@ IBM Snap ML https://pypi.org/project/snapml/ ; scikit-learn https://scikit-learn
 
 # 3-minute video script
 
+**Before recording** (aim for 2:45, the hard limit is 3:00)
+1. `ssh -i ~/.ssh/linuxone linux1@148.100.77.226 ./restart_kavach.sh` restarts the replay from the start.
+2. Open `http://localhost:8001/#key=<key from ~/.kavach_key on the VM>`; the page wipes the key from the address bar.
+3. Let it run for a minute so the counters and the mule network fill up.
+4. Keep a terminal open: `ssh -i ~/.ssh/linuxone linux1@148.100.77.226`, ready to run `~/proof.sh` (takes ~12 s).
+
 **0:00–0:20 · Hook** (face or slide 2)
 "Last year Indians lost over 22 thousand crore rupees to cyber fraud. In a digital-arrest scam, a fake CBI officer keeps you on a video call until you send money over UPI. Within minutes it's bounced through mule accounts and gone. We built Kavach to stop that payment before it settles."
 
@@ -43,10 +49,10 @@ IBM Snap ML https://pypi.org/project/snapml/ ; scikit-learn https://scikit-learn
 - "This is a live replay of two unseen days of UPI traffic." Point at scored, held, money protected, fraud caught and false holds.
 - Click a HOLD row: "Each decision explains itself: receiver collecting from many first-time payers, money passed straight through."
 - Mule network panel: "Purple nodes are mule accounts Kavach put on its watchlist automatically. Their outflows are frozen."
-- Try-it panel: pay ₹15,000 → ALLOW. Click Analyse call with the CBI transcript → "Likely scam". Pay again → STEP-UP/HOLD with "Scam call shortly before payment".
+- Try-it panel: pay ₹15,000 → ALLOW. Click Analyse call with the CBI transcript → "Likely scam". Pay again → HOLD with "Scam call shortly before payment".
 
-**1:50–2:25 · IBM Z** (slide 6 + terminal on LinuxONE showing `uname -m` = s390x and bench output)
-"Everything runs on IBM LinuxONE. We use IBM Snap ML, which compiles our model for the Telum on-chip AI accelerator, so inference happens on the same chip as the payment, in microseconds, on every transaction. Data never leaves the platform."
+**1:50–2:25 · IBM Z** (terminal on LinuxONE: run `~/proof.sh`, then slide 6)
+"Everything you just saw runs on IBM LinuxONE, on an IBM z17. This is a live benchmark on that machine: IBM Snap ML scores each payment in about 28 microseconds on the z17 cores, and the same model also runs on the Telum on-chip AI accelerator with identical decisions. So the fraud check happens inside the payment, on the same machine, and the data never leaves the platform."
 
 **2:25–2:50 · Results** (slide 7)
 "At the same 0.1% false-alarm rate, a normal per-transaction model catches 80% of fraud. Kavach catches 97%, because it sees the mule network and the scam call."

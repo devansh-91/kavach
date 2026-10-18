@@ -113,7 +113,7 @@ export KAVACH_API_KEY=$(openssl rand -hex 16); echo $KAVACH_API_KEY
 .venv/bin/uvicorn kavach.server:app --host 127.0.0.1 --port 8000
 # on your laptop
 ssh -i ~/.ssh/linuxone -L 8000:127.0.0.1:8000 linux1@<vm-ip>
-# browse http://localhost:8000/#key=<key>   (the key stays in the URL fragment, never sent in URLs/logs)
+# browse http://localhost:8000/#key=<key>   (the fragment is never sent to the server; the page wipes it from the address bar on load)
 ```
 
 ## Security (it's a payments system)
