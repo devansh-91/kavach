@@ -1,0 +1,20 @@
+# systemd unit for the Kavach server on a LinuxONE VM: restarts on crash and on reboot.
+# Install: sudo cp deploy/kavach.service /etc/systemd/system/ && sudo systemctl enable --now kavach
+# Secrets live in ~/.kavach.env (mode 600): KAVACH_API_KEY=... and optionally KAVACH_TREE_FORMAT=zdnn_tensors
+[Unit]
+Description=Kavach real-time UPI scam and mule shield
+After=network-online.target
+
+[Service]
+User=linux1
+WorkingDirectory=/home/linux1/kavach
+EnvironmentFile=/home/linux1/.kavach.env
+ExecStart=/home/linux1/kavach/.venv/bin/uvicorn kavach.server:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

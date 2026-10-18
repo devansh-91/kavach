@@ -64,6 +64,7 @@ payments-grade security review. ✅ verified · ⏳ pending · ⚠️ known limi
 | C18 | Account takeover (new device, night, new payee) | ✅ | first ₹25k drain → STEP-UP, rest HOLD (`test_new_device_drain_is_stepped_up`) |
 | C19 | Network exposure | ✅ | on the VM the server listens on 127.0.0.1:8000 only (checked with `ss`); viewed through an SSH tunnel; API key file mode 600; SSH key-only |
 | C20 | Privacy | ✅ | synthetic data; no external AI APIs; transcripts not logged |
+| C20b | Availability | ✅ | on the VM the server runs as a systemd service (`Restart=always`, enabled at boot); killed with `kill -9` it was back in 8 s; the laptop tunnel reconnects by itself (tested: 7 s) |
 | C21 | Production hardening beyond a hackathon | ⚠️ | still needs TLS/mTLS, a secrets manager/HSM, an analyst review queue, DPDP-compliant retention, and a shared rate limiter for multiple instances |
 
 **Test suite:** `python -m pytest -q tests` → 15 passed on the laptop and on LinuxONE z17 (14/14 in a clean Ubuntu 24.04 container before the WebSocket test was added).

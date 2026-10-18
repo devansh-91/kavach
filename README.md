@@ -116,6 +116,10 @@ ssh -i ~/.ssh/linuxone -L 8000:127.0.0.1:8000 linux1@<vm-ip>
 # browse http://localhost:8000/#key=<key>   (the fragment is never sent to the server; the page wipes it from the address bar on load)
 ```
 
+To keep it running unattended, install it as a service that restarts on crash or reboot
+(`deploy/kavach.service`; key in `~/.kavach.env`, mode 600), and use `scripts/tunnel.sh linux1@<vm-ip>`
+on the laptop for a tunnel that reconnects by itself (browse `http://localhost:8001/#key=<key>`).
+
 ## Security (it's a payments system)
 
 | Control | How |
@@ -181,6 +185,8 @@ kavach/static/       dashboard (index.html + app.js, CSP-clean)
 tests/               pytest suite incl. security and abuse cases
 kavach/bench.py      latency / throughput benchmark (CPU vs Telum zDNN)
 setup_linuxone.sh    one-shot LinuxONE setup
+deploy/kavach.service  systemd unit: auto-restart on crash and reboot
+scripts/tunnel.sh    self-healing SSH tunnel from the laptop
 ```
 
 ## Open-source used
