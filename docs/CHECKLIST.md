@@ -37,6 +37,7 @@ payments-grade security review. ✅ verified · ⏳ pending · ⚠️ known limi
 | B11 | Dashboard works (desktop + 390 px phone, no console errors) | ✅ | Playwright on the laptop and through an SSH tunnel to LinuxONE; feed freezes on hover so rows are clickable |
 | B11b | WebSocket on a minimal install | ✅ | bug found on LinuxONE (plain `uvicorn` has no WebSocket support → 404); fixed by pinning `websockets`, plus a regression test |
 | B12 | Amount-splitting by a fresh account with no call and no mule signal | ⚠️ | 6 × ₹4,999 to a new person is allowed; a cumulative new-payee limit is the next policy |
+| B12b | Paying the same person again right after a scam call | ⚠️ | the scam-call guardrail covers only *new* payees, so a second payment to someone first paid minutes earlier can be allowed when the model score is low (seen for 1 of 3 test users); next policy: treat payees first paid in the last 24 h as new. Demo users U00344 → U00270 never appear in the replay, so the demo is repeatable |
 | B13 | Synthetic data; call model trained on templates | ⚠️ | stated in README and deck |
 | B14 | Replay runs once | ⚠️ | restart the server for a fresh demo (~3 s) |
 

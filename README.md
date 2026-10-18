@@ -147,10 +147,10 @@ framing attack and new-device draining.
 ```bash
 # a scam call reaches the user (add -H "X-API-Key: $KAVACH_API_KEY" when a key is set)
 curl -X POST localhost:8000/api/call -H 'Content-Type: application/json' \
-  -d '{"user":"U00044","transcript":"main CBI officer bol raha hoon, aap digital arrest mein ho, paise transfer karo"}'
+  -d '{"user":"U00344","transcript":"main CBI officer bol raha hoon, aap digital arrest mein ho, paise transfer karo"}'
 # the same user then tries to pay someone new
 curl -X POST localhost:8000/api/txn -H 'Content-Type: application/json' \
-  -d '{"sender":"U00044","receiver":"U01234","amount":15000}'
+  -d '{"sender":"U00344","receiver":"U00270","amount":15000}'
 # -> {"decision":"STEP_UP"/"HOLD","risk":...,"reasons":[...],"latency_ms":...}
 ```
 
