@@ -1,0 +1,25 @@
+{
+  "arch": "s390x",
+  "cpu": "s390x",
+  "n_txns": 20000,
+  "results": [
+    {
+      "tree_format": "compress_trees",
+      "engine": "CPU compressed trees",
+      "e2e_p50_us": 28.1,
+      "e2e_p99_us": 51.9,
+      "batch_1_txn_per_s": 101039,
+      "batch_64_txn_per_s": 285491,
+      "batch_1024_txn_per_s": 292655
+    },
+    {
+      "tree_format": "zdnn_tensors",
+      "engine": "IBM Z Integrated Accelerator for AI (zDNN)",
+      "e2e_p50_us": 48.7,
+      "e2e_p99_us": 72.0,
+      "batch_1_txn_per_s": 34296,
+      "batch_64_txn_per_s": 61826,
+      "batch_1024_txn_per_s": 29952
+    }
+  ]
+}

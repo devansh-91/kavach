@@ -45,7 +45,7 @@ th{color:var(--muted);font-weight:600;font-size:14px;text-transform:uppercase;le
   <div class="tag" style="margin-top:22px">IBM Z Datathon 2026 · SSF2026 · Real-Time AI for Critical Decisions</div>
   <h1>Kavach</h1>
   <p style="font-size:28px;max-width:900px;color:#e6ebf5;margin:0">Stops UPI scams <i>inside</i> the transaction — by watching the payment, the money flow, and the scam call together.</p>
-  <p class="muted" style="margin-top:28px">In-transaction AI on IBM LinuxONE · Snap ML on the Telum on-chip AI accelerator</p>
+  <p class="muted" style="margin-top:28px">Built and run on IBM LinuxONE (z17) · IBM Snap ML · Telum on-chip AI accelerator via zDNN</p>
   <div class="foot"><span>Kavach</span><span>1</span></div>
 </section>
 
@@ -82,7 +82,7 @@ th{color:var(--muted);font-weight:600;font-size:14px;text-transform:uppercase;le
   <h2>Three signals, one decision, in microseconds</h2>
   <div class="c3">
     <div class="card"><h3 style="color:var(--blue)">① The payment</h3><p>Amount vs. the sender's habits, first payment to this person, new device, odd hour, bursts of payments.</p></div>
-    <div class="card"><h3 style="color:var(--violet)">② The money flow</h3><p>Mule graph features: receiver fan-in from first-time payers, pass-through (money out minutes after money in). Repeat offenders go on a <b>mule watchlist</b> and are frozen.</p></div>
+    <div class="card"><h3 style="color:var(--violet)">② The money flow</h3><p>Mule graph features: receiver fan-in from first-time payers, pass-through (money out minutes after money in). Repeat receivers go on a <b>mule watchlist</b>: payments into them are held, their own outflows need verification.</p></div>
     <div class="card"><h3 style="color:var(--hold)">③ The scam call</h3><p>Hinglish call-transcript classifier spots "digital arrest", fake KYC, screen-share scripts. Risk attaches to the user for 2 hours.</p></div>
   </div>
   <div style="display:flex;gap:18px;margin-top:34px;align-items:center;font-size:19px">
@@ -121,8 +121,8 @@ th{color:var(--muted);font-weight:600;font-size:14px;text-transform:uppercase;le
   <div class="tag">Why IBM Z / LinuxONE</div>
   <h2>Score 100% of payments in-line, where they already run</h2>
   <div class="cols">
-    <div class="card"><h3>Telum on-chip AI accelerator</h3><p>Snap ML compiles our trees to zDNN tensors on z16/z17, so inference runs on the processor chip next to the transaction workload — no network hop to a separate AI server.</p></div>
-    <div class="card"><h3>Built and run on LinuxONE</h3><p>Trained, benchmarked and served on a LinuxONE Community Cloud VM (s390x). One setup script; same model file falls back to CPU elsewhere.</p></div>
+    <div class="card"><h3>Telum on-chip AI accelerator</h3><p>With IBM zDNN, Snap ML compiles our trees to run on the Telum AI accelerator (NNPA) on the same chip as the payment workload — no network hop to an AI server. Verified on z17: identical decisions to the CPU path.</p></div>
+    <div class="card"><h3>Built and run on LinuxONE</h3><p>Trained, tested (14/14) and served on a LinuxONE Community Cloud VM on an <b>IBM z17</b> (s390x). One setup script; the same model file runs on CPU elsewhere.</p></div>
     <div class="card"><h3>Data never leaves the platform</h3><p>Payment and call data stay on Z with pervasive encryption. No external AI APIs, no data copies to a GPU cloud.</p></div>
     <div class="card"><h3>Scale & reliability</h3><p>UPI does billions of payments a month with spikes at salary day and festivals. In-transaction AI must keep up with the core system itself — Z's throughput and uptime are made for this.</p></div>
   </div>
@@ -131,15 +131,15 @@ th{color:var(--muted);font-weight:600;font-size:14px;text-transform:uppercase;le
 
 <!-- 7 -->
 <section class="s">
-  <div class="tag">Results · held-out days, never seen in training</div>
+  <div class="tag">Results on IBM LinuxONE · held-out days, never seen in training</div>
   <h2>Same false-alarm budget, far more scams stopped</h2>
   <div class="row"><span>Rule: &gt;₹20k to new payee <span class="muted" style="font-size:14px">(2% FPR)</span></span><div class="bar"><i style="width:28.2%;background:#5b6780"></i></div><b style="font-family:'JetBrains Mono';font-size:24px">28.2%</b></div>
-  <div class="row"><span>Per-transaction ML <span class="muted" style="font-size:14px">(0.1% FPR)</span></span><div class="bar"><i style="width:82.1%;background:var(--blue)"></i></div><b style="font-family:'JetBrains Mono';font-size:24px">82.1%</b></div>
-  <div class="row"><span><b>Kavach</b> + mule flow + scam calls <span class="muted" style="font-size:14px">(0.1% FPR)</span></span><div class="bar"><i style="width:96.2%;background:var(--allow)"></i></div><b style="font-family:'JetBrains Mono';font-size:24px;color:var(--allow)">96.2%</b></div>
+  <div class="row"><span>Per-transaction ML <span class="muted" style="font-size:14px">(0.1% FPR)</span></span><div class="bar"><i style="width:79.6%;background:var(--blue)"></i></div><b style="font-family:'JetBrains Mono';font-size:24px">79.6%</b></div>
+  <div class="row"><span><b>Kavach</b> + mule flow + scam calls <span class="muted" style="font-size:14px">(0.1% FPR)</span></span><div class="bar"><i style="width:97.3%;background:var(--allow)"></i></div><b style="font-family:'JetBrains Mono';font-size:24px;color:var(--allow)">97.3%</b></div>
   <div class="c3" style="margin-top:30px">
-    <div class="card"><div class="big" style="font-size:40px">0.991</div><p>PR-AUC on 33,538 unseen payments (554 frauds)</p></div>
-    <div class="card"><div class="big" style="font-size:40px">26 µs</div><p>p50 full in-transaction path (features + model + decision), CPU baseline</p></div>
-    <div class="card"><div class="big" style="font-size:40px">0.06%</div><p>legit payments held in the live replay, while 97.8% of fraud payments were stopped</p></div>
+    <div class="card"><div class="big" style="font-size:40px">0.992</div><p>PR-AUC on 33,538 unseen payments (554 frauds), trained on LinuxONE</p></div>
+    <div class="card"><div class="big" style="font-size:40px">28 µs</div><p>p50 per payment on z17 (features + model + decision); 49 µs on the Telum accelerator, same decisions</p></div>
+    <div class="card"><div class="big" style="font-size:40px">98.4%</div><p>of fraud payments stopped in the LinuxONE replay, holding only 0.046% of legit payments</p></div>
   </div>
   <div class="foot"><span>Kavach</span><span>7</span></div>
 </section>

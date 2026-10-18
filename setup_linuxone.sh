@@ -6,16 +6,19 @@ set -euo pipefail
 cd "$(dirname "$0")"
 if command -v apt-get >/dev/null; then
   sudo apt-get update -y
+  # libzdnn0 = IBM Z Deep Neural Network library; lets Snap ML run trees on the Telum AI accelerator (NNPA)
   sudo apt-get install -y python3-venv python3-pip python3-numpy python3-pandas python3-sklearn \
-       python3-scipy
+       python3-scipy libzdnn0
 else
   sudo dnf install -y python3 python3-pip python3-numpy python3-pandas python3-scikit-learn \
        python3-scipy || sudo dnf install -y python3 python3-pip gcc gcc-c++ python3-devel
+  sudo dnf install -y zdnn || echo "zDNN not available: Snap ML will use CPU trees"
 fi
 python3 -m venv --system-site-packages .venv
 .venv/bin/pip install -q --upgrade pip
 .venv/bin/pip install -q snapml==1.17.2 fastapi==0.143.3 pydantic==2.14.1 uvicorn==0.54.0
 echo "== arch: $(uname -m)"; grep -m1 -i "machine" /proc/cpuinfo || true
+grep -qw nnpa /proc/cpuinfo && echo "== NNPA (Telum on-chip AI accelerator) available" || echo "== no NNPA on this machine"
 mkdir -p artifacts && chmod 700 artifacts
 .venv/bin/python -m kavach.train | tee artifacts/train_log.txt
 .venv/bin/python -m kavach.bench

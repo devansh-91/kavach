@@ -6,6 +6,7 @@ Elsewhere it falls back to compressed trees on CPU. Same code, same model file.
 """
 import hashlib
 import json
+import os
 import platform
 import time
 from collections import defaultdict, deque
@@ -49,7 +50,9 @@ def accelerator_info(model):
 
 
 class Engine:
-    def __init__(self, tree_format="auto", warmup=True):
+    def __init__(self, tree_format=None, warmup=True):
+        # auto = Telum AI accelerator (zDNN) when present, else CPU; override with KAVACH_TREE_FORMAT
+        tree_format = tree_format or os.environ.get("KAVACH_TREE_FORMAT", "auto")
         meta = json.loads((ART / "meta.json").read_text())
         self.thr_step, self.thr_hold = meta["thr_step"], meta["thr_hold"]
         self.baseline = np.asarray(meta["baseline"], dtype=np.float32)

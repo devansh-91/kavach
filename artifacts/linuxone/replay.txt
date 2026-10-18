@@ -1,0 +1,11 @@
+# Full replay of the 2 held-out days (33,538 payments) on IBM LinuxONE (z17, machine 9175), 2026-10-18
+== tree_format=auto -> zdnn_tensors (Telum on-chip AI accelerator via zDNN)
+txns 33538  fraud caught 545/554 = 98.4%
+legit held 0.046%  legit stepped-up 0.107%  money protected 96.2% of Rs 9,091,605
+watchlist size 64  latency p50 0.047 ms  p99 0.060 ms
+== tree_format=compress_trees (CPU)
+txns 33538  fraud caught 545/554 = 98.4%
+legit held 0.046%  legit stepped-up 0.107%  money protected 96.2% of Rs 9,091,605
+watchlist size 64  latency p50 0.027 ms  p99 0.037 ms
+== CPU vs zDNN on all 33,538 test rows: max |p_cpu - p_zdnn| = 0.0, decision agreement 100%
+== pytest on s390x: 14 passed

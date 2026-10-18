@@ -1,0 +1,93 @@
+{
+  "features": [
+    "log_amount",
+    "amt_vs_sender_avg",
+    "amt_vs_sender_max",
+    "sender_txn_1h",
+    "sender_amt_1h",
+    "sender_payees_1h",
+    "new_payee",
+    "new_device",
+    "night",
+    "hour",
+    "sender_age",
+    "receiver_age",
+    "receiver_is_merchant",
+    "recv_senders_24h",
+    "recv_in_amt_24h",
+    "recv_firsttime_payers_24h",
+    "recv_hist_in",
+    "sender_in_amt_1h",
+    "sender_passthrough_1h",
+    "sender_mins_since_in",
+    "scam_call_risk_2h"
+  ],
+  "baseline": [
+    6.249309062957764,
+    0.5577693581581116,
+    0.2143610417842865,
+    0.0,
+    6.418919563293457,
+    1.0,
+    1.0,
+    0.0,
+    0.0,
+    14.748077392578125,
+    7.19153356552124,
+    7.426751613616943,
+    1.0,
+    20.0,
+    9.526933670043945,
+    14.0,
+    3.4339871406555176,
+    0.0,
+    0.0,
+    7.012932300567627,
+    0.0
+  ],
+  "model_sha256": "544d2b767366f0193b7a6df68f78cec15d5623e36eb32fb5fd47c6ebac2eb217",
+  "thr_step": 0.3,
+  "thr_hold": 0.8,
+  "metrics": {
+    "pr_auc": 0.9915777496164146,
+    "roc_auc": 0.999700434561424,
+    "step_up": {
+      "threshold": 0.3,
+      "recall": 0.9693140794223827,
+      "precision": 0.9437609910964966,
+      "false_positive_rate": 0.0009701673538685423
+    },
+    "hold": {
+      "threshold": 0.8,
+      "recall": 0.9566787003610109,
+      "precision": 0.9724770784378052,
+      "false_positive_rate": 0.00045476594712587923
+    },
+    "recall_by_kind": {
+      "ato": 0.9666666666666667,
+      "digital_arrest": 0.8732394366197183,
+      "digital_arrest_test": 1.0,
+      "kyc_scam": 0.9607843137254902,
+      "kyc_scam_test": 0.9090909090909091,
+      "mule_cashout": 0.9932203389830508,
+      "mule_layering": 0.9803921568627451
+    },
+    "call_model_auc": 1.0,
+    "n_test_txns": 33538,
+    "n_test_fraud": 554,
+    "ablation_recall_at_0.1pct_fpr": {
+      "rule_amount>20k_and_new_payee": {
+        "recall": 0.2815884476534296,
+        "fpr": 0.01976715983507155
+      },
+      "per_txn_model_only": {
+        "recall": 0.796028880866426,
+        "fpr": 0.0010004850836769343
+      },
+      "kavach_full": {
+        "recall": 0.9729241877256317,
+        "fpr": 0.0010004850836769343
+      }
+    }
+  }
+}

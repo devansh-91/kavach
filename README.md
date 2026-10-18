@@ -17,42 +17,57 @@ It looks at three things a normal per-transaction model cannot see together:
 1. **The payment** — amount vs. the sender's habits, new payee, new device, odd hour, bursts.
 2. **The money flow (mule graph)** — is the receiver collecting from many first-time payers?
    Is the sender forwarding money minutes after receiving it (pass-through)? Accounts that keep
-   receiving held payments go on a **mule watchlist** and their outflows are frozen.
+   receiving held payments go on a **mule watchlist**: payments into them are held and their own
+   outflows need verification.
 3. **The scam call** — a Hinglish call-transcript classifier (char n-grams, robust to spelling
    like *paise/paisa/pese*) flags "CBI officer / digital arrest / KYC expire" calls; that risk is
    attached to the user for 2 hours and feeds the payment model.
 
 ## Results (held-out days, never seen in training)
 
+Trained, evaluated and served on **IBM LinuxONE** (z17, machine type 9175, Ubuntu 24.04, s390x —
+evidence in [`artifacts/linuxone/`](artifacts/linuxone)):
+
 | Approach | Fraud caught | False alarms |
 |---|---|---|
 | Rule: amount > ₹20k **and** new payee | 28.2% | 2.0% |
-| Per-transaction ML (same model, no graph/call features) | 82.1% | 0.1% |
-| **Kavach** (+ mule-flow + scam-call signals) | **96.2%** | **0.1%** |
+| Per-transaction ML (same model, no graph/call features) | 79.6% | 0.1% |
+| **Kavach** (+ mule-flow + scam-call signals) | **97.3%** | **0.1%** |
 
-PR-AUC 0.991 on 33,538 unseen transactions (554 frauds). In the live replay the dashboard shows
-97.8% of fraud transactions stopped and 96.1% of the money victims sent protected, while holding only
-0.06% of legitimate payments (another 0.11% get an OTP step-up).
+PR-AUC 0.992 on 33,538 unseen payments (554 frauds). Full live replay on LinuxONE:
+**98.4% of fraud payments stopped, 96.2% of the money victims sent protected, only 0.046% of
+legitimate payments held** (another 0.11% get an OTP step-up). Training the same code on an x86
+laptop gives 96.2% vs 82.1% (PR-AUC 0.991) — small floating-point differences between platforms.
 
 Latency, full in-transaction path (feature lookup + model + decision), one payment at a time:
 
-| Platform | Inference engine | p50 | p99 | Throughput (batch 1024) |
+| Platform | Inference engine | p50 | p99 | Throughput (batch 64) |
 |---|---|---|---|---|
-| Laptop x86-64 | Snap ML compressed trees (CPU) | 26 µs | 64 µs | ~344k txn/s |
-| IBM LinuxONE (s390x) | Snap ML → zDNN on Telum AI accelerator | see `artifacts/bench_s390x.json` | | |
+| IBM LinuxONE z17 | Snap ML compressed trees on the z17 cores | **28 µs** | 52 µs | ~285k txn/s |
+| IBM LinuxONE z17 | Snap ML → zDNN on the **Telum on-chip AI accelerator** (NNPA) | 49 µs | 72 µs | ~62k txn/s |
+| Laptop x86-64 | Snap ML compressed trees | 26 µs | 64 µs | ~338k txn/s |
+
+The accelerator path gives **bit-identical predictions** (max difference 0.0, 100% decision agreement
+on all 33,538 test payments). For our compact 300-tree model the overhead of handing work to the
+accelerator outweighs its compute advantage, so the z17 cores are faster today; both paths stay
+far inside a UPI authorisation budget. Kavach uses the accelerator by default
+(`KAVACH_TREE_FORMAT=auto`) and can pin the CPU path with `KAVACH_TREE_FORMAT=compress_trees`.
+(Ubuntu ships zDNN 1.0.1; newer zDNN releases target z17 directly.)
 
 ## How it uses IBM Z / LinuxONE
 
-- **Runs natively on IBM LinuxONE (s390x)** — trained and served on a LinuxONE Community Cloud VM.
+- **Runs natively on IBM LinuxONE (s390x)** — trained, tested (14/14) and served on a LinuxONE
+  Community Cloud VM on an IBM z17.
 - **IBM Snap ML** gradient-boosted trees. The trained model is exported to PMML and re-imported with
-  `import_model(..., tree_format="auto")`; on z16/z17 Snap ML compiles the trees to **zDNN tensors
-  and runs inference on the on-chip Integrated Accelerator for AI (Telum)** — the same chip that
-  sits next to the bank's core payment workload, so scoring happens *inside* the transaction
-  instead of after it. Same code and model file fall back to CPU elsewhere.
+  `import_model(..., tree_format="auto")`; with IBM's **zDNN** library installed, Snap ML compiles
+  the trees to zDNN tensors and runs inference on the **Telum on-chip Integrated Accelerator for AI**
+  (the `nnpa` CPU facility) — the same chip that runs the bank's payment workload, so scoring
+  happens *inside* the transaction with no network hop to an AI server. We benchmarked that path
+  against the z17 cores and verified identical decisions.
 - **Why Z for this:** most of the world's card and bank transactions already run on IBM Z.
   Scoring 100% of payments in-line (not a sample, not after settlement) needs the latency,
-  throughput, and reliability Z is built for; sensitive payment data never leaves the platform
-  (pervasive encryption, no external AI API).
+  throughput and reliability Z is built for, and sensitive payment data never has to leave the
+  platform (no external AI API; Z offers pervasive encryption for data at rest and in flight).
 
 ## Architecture
 
@@ -67,7 +82,7 @@ flowchart LR
   D -->|ALLOW| OK[Settle]
   D -->|STEP-UP| OTP[OTP + cooling-off + warning]
   D -->|HOLD| H[Block · alert victim · notify bank]
-  H --> W[Mule watchlist<br/>freeze receiver outflows]
+  H --> W[Mule watchlist<br/>hold inflows · verify outflows]
   W --> G
 ```
 

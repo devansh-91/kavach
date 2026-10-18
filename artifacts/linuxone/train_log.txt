@@ -1,0 +1,45 @@
+world: 117,377 txns (1.76% fraud), 14,132 calls  [1.2s]
+features: (117377, 21)  [6.2s]
+{
+  "pr_auc": 0.9915777496164146,
+  "roc_auc": 0.999700434561424,
+  "step_up": {
+    "threshold": 0.3,
+    "recall": 0.9693140794223827,
+    "precision": 0.9437609910964966,
+    "false_positive_rate": 0.0009701673538685423
+  },
+  "hold": {
+    "threshold": 0.8,
+    "recall": 0.9566787003610109,
+    "precision": 0.9724770784378052,
+    "false_positive_rate": 0.00045476594712587923
+  },
+  "recall_by_kind": {
+    "ato": 0.9666666666666667,
+    "digital_arrest": 0.8732394366197183,
+    "digital_arrest_test": 1.0,
+    "kyc_scam": 0.9607843137254902,
+    "kyc_scam_test": 0.9090909090909091,
+    "mule_cashout": 0.9932203389830508,
+    "mule_layering": 0.9803921568627451
+  },
+  "call_model_auc": 1.0,
+  "n_test_txns": 33538,
+  "n_test_fraud": 554
+}
+{
+  "rule_amount>20k_and_new_payee": {
+    "recall": 0.2815884476534296,
+    "fpr": 0.01976715983507155
+  },
+  "per_txn_model_only": {
+    "recall": 0.796028880866426,
+    "fpr": 0.0010004850836769343
+  },
+  "kavach_full": {
+    "recall": 0.9729241877256317,
+    "fpr": 0.0010004850836769343
+  }
+}
+done [18.1s] -> /home/linux1/kavach/artifacts
